@@ -1,0 +1,11 @@
+.env
+.env.*
+*secret*.key
+.DS_Store
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.log
+snapshots/
+.state/

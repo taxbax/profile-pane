@@ -1,0 +1,4 @@
+name: profile-pane
+version: "0.1.0"
+description: "Cross-profile config pane — drag skills to profiles and sync SOUL / memory / user-profile across groups. Copy+manifest reconcile, honest deployed state, per-group scope set in the pane."
+author: "Hermes Agent"

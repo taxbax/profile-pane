@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box}
+body{margin:0;font-family:inherit;font-size:12px;color:var(--foreground);background:transparent}
+.w{display:flex;flex-direction:column;gap:12px}
+.cap{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-foreground);font-weight:700;margin-bottom:4px}
+.box{border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.head{display:flex;align-items:center;gap:5px;padding:4px 6px;border-bottom:1px solid var(--border)}
+.lab{font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.sp{flex:1 1 0}
+.verb{font-size:10px;color:var(--muted-foreground)}
+.chip{font-size:9.5px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);color:var(--muted-foreground);display:inline-flex;gap:3px;align-items:center}
+.chip.has{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent);color:var(--foreground);font-weight:700}
+.chip.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-weight:700}
+.wrap{display:flex;flex-wrap:wrap;gap:3px;padding:6px}
+.acc{border-left:2px solid var(--accent)}
+.acc .head{padding-left:3px}
+.row{display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:5px}
+.row.m{border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.name{font-size:10.5px}
+.chipbtn{font-size:9px;font-weight:600;padding:1px 5px;border-radius:4px;border:1px solid var(--border);color:var(--muted-foreground);display:inline-flex;gap:3px;align-items:center}
+.chipbtn.m{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.btn{flex:1;height:24px;border-radius:6px;font-size:10px;display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid var(--border);color:var(--foreground)}
+.btn.on{background:var(--accent);border-color:transparent;color:var(--card);font-weight:700}
+.btn.off{color:var(--muted-foreground);opacity:.45}
+.note{font-size:10px;color:var(--muted-foreground);line-height:1.4;margin-top:5px}
+mark{background:color-mix(in srgb,var(--accent) 22%,transparent);color:inherit;padding:0 2px;border-radius:2px}
+.q{font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--accent)}
+</style></head><body><div class="w">
+
+<div>
+<div class="cap">1 · Library now shows the whole machine, marked against your profile</div>
+<div class="box">
+  <div class="head">
+    <span style="color:var(--muted-foreground)">▾</span><span class="lab">Library (1,204)</span>
+    <span style="font-size:9px;color:var(--accent);font-weight:700">38 to add</span><span class="sp"></span>
+    <span class="verb">stage 38</span>
+  </div>
+  <div class="wrap">
+    <span class="chip has">✓ trading-control-plane</span>
+    <span class="chip on">✓ bankr-api-basics</span>
+    <span class="chip">◦ emby-server-admin</span>
+    <span class="chip">◦ torrent-search</span>
+    <span class="chip">◦ youtube-content</span>
+    <span class="chip has">✓ github</span>
+    <span class="chip">◦ dogfood</span>
+    <span class="chip">◦ apple-notes</span>
+  </div>
+</div>
+<div class="note"><mark>Bold with a ✓</mark> = already in the focused profile (clicking does nothing — nothing to add). <mark>Plain</mark> = available; one click stages the add. The number after a bold chip is how many profiles share it.</div>
+</div>
+
+<div>
+<div class="cap">2 · The stack, reordered</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+  <div class="box"><div class="head"><span style="color:var(--muted-foreground)">▸</span><span class="lab">Policy</span><span style="font-size:9.5px;color:var(--muted-foreground)">3 members · anchor sys · soul blocks · auto on</span></div></div>
+  <div class="box"><div>
+    <div class="head"><span style="color:var(--muted-foreground)">▾</span><span class="lab" style="color:var(--accent)">Staged (3)</span><span style="font-size:9px;color:var(--muted-foreground)">→ sys</span><span class="sp"></span><span class="verb" style="color:#d9534f">clear</span></div>
+    <div class="wrap" style="padding:4px 9px">
+      <span class="chip">common → sys</span><span class="chip">dogfood → sys</span><span class="chip">apple-notes → trad</span>
+    </div>
+    <div style="display:flex;gap:4px;padding:0 9px 7px">
+      <div class="btn">▶ Preview</div><div class="btn on">✓ Apply</div>
+    </div>
+  </div></div>
+  <div class="box acc"><div class="head"><span class="lab">Profiles (10)</span><span class="sp"></span><span style="font-size:9px;color:var(--muted-foreground)">click a row to focus</span></div>
+    <div class="row m"><span style="color:var(--muted-foreground)">▸</span><span class="name">sys</span><span class="chipbtn m">✓ member</span><span class="sp"></span><span style="font-size:9px;color:#d9534f">1700ln</span></div>
+  </div>
+</div>
+<div class="note">Policy ▸ queue ▸ <mark>buttons</mark>, all above the two boxes — the queue folds, the buttons never do. The green edge marks the box you act on.</div>
+</div>
+
+<div>
+<div class="cap">3 · Apply only fills when there is something to do</div>
+<div style="display:flex;flex-direction:column;gap:5px;max-width:340px">
+  <div style="display:flex;gap:4px"><div class="btn">▶ Preview</div><div class="btn off">✓ Apply</div></div>
+  <div style="font-size:9.5px;color:var(--muted-foreground)">nothing queued — outlined, not filled</div>
+  <div style="display:flex;gap:4px"><div class="btn">▶ Preview</div><div class="btn on">✓ Apply</div></div>
+  <div style="font-size:9.5px;color:var(--muted-foreground)">3 staged — filled</div>
+</div>
+<div class="note"><span class="q">Preview</span> resolves every target and runs the same preflight Apply uses — path guard, group resolve, secret scan — then reports what <em>would</em> happen. It writes nothing. Use it to check a queue before committing.</div>
+</div>
+
+</div></body></html>
