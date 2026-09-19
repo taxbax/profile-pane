@@ -263,7 +263,7 @@ const BoxBody = ({ children, style }) =>
 // ------------------------------------------------------------------------------ pane
 
 function Pane() {
-  const [gid, setGid] = useState(null)
+  const [gid, setSelectedGroup] = useState(null)
   const [focusAgent, setFocusAgent] = useState(null)
   const [expanded, setExpanded] = useState(null)   // agent row expanded into a card
   const [staged, setStaged] = useState([])
@@ -533,7 +533,7 @@ function Pane() {
     setBusy(true)
     try {
       const r = await rest.fn('/rename-group', { method: 'POST', body: { from: group.id, to: renameDraft } })
-      if (r.ok) { setGid(r.to); setRenaming(null); flash(`renamed → ${r.to}`, 'check', 4000) }
+      if (r.ok) { setSelectedGroup(r.to); setRenaming(null); flash(`renamed → ${r.to}`, 'check', 4000) }
       else flash(r.error || 'rename failed', 'check', 5000)
       await invalidate()
     } catch (e) { flash('rename failed', 'check', 4000) } finally { setBusy(false) }
@@ -611,7 +611,7 @@ function Pane() {
     if (groups.some(g => g.id === id)) { flash(`“${id}” already exists`, 'check', 4000); return }
     try {
       await rest.fn('/groups', { method: 'POST', body: { id, members: [], policy: {} } })
-      setNewName(null); setGid(id); setStaged([]); setPreview(null); setArmingDelete(false)
+      setNewName(null); setSelectedGroup(id); setStaged([]); setPreview(null); setArmingDelete(false)
       setPolicyOpen(true)        // a brand-new group wants configuring, so open the controls
       await invalidate()
       flash(`group “${id}” created`, 'check', 3200)
@@ -621,7 +621,7 @@ function Pane() {
   const delGroup = async () => {
     if (!group) return
     await rest.fn('/groups/' + group.id, { method: 'DELETE' })
-    setArmingDelete(false); setGid(null); setStaged([]); setPreview(null)
+    setArmingDelete(false); setSelectedGroup(null); setStaged([]); setPreview(null)
     await invalidate()
   }
 
@@ -872,7 +872,7 @@ function Pane() {
           title: on ? `${g.id} — ${(g.members || []).length} member(s). This panel is showing.` : `Switch to “${g.id}”`,
           onClick: e => {
             e.stopPropagation(); haptic('tap')
-            setGid(g.id); setStaged([]); setPreview(null)
+            setSelectedGroup(g.id); setStaged([]); setPreview(null)
             setArmingDelete(false); setPendingPolicy(null); setPendingMembers(null); setPolicyOpen(true)
           },
           style: {

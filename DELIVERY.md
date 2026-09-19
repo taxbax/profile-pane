@@ -19,18 +19,9 @@ every layer copies FROM that anchor INTO the others.
 **replaces** that region, so it never grows a second copy — which is what makes a
 schedule safe to leave running.
 
-Anchors on this machine, by **line count** (not bytes — this block used to say "by size"
-while printing lines, and named three profiles that do not exist: the real directories are
-`schizsho-system-builder`, `schizsho-production` and `schizsho-showrunner`).
-**Measured 2026-09-13, after the SOUL sync:**
-
-`sys` 3412 · `media-control-bot` 1799 · `default` 1704 · `schizsho-visual-dev` 195 ·
-`schizsho-story-room` 28 · `schizsho-system-builder` 23 · `schizsho-production` 22 ·
-`schizsho-showrunner` 22 · `trad` 12.
-
-Two of these moved and the block did not: `sys` was `1705` and `media-control-bot` was `92`
-before each received a full SOUL. **A line count is a *measurement*, so it goes stale the
-moment the file changes — re-measure it, never carry it forward.**
+Anchors are described by **line count, not bytes**, and a line count is a *measurement* — it
+goes stale the moment a SOUL file changes, so re-measure it rather than carrying any copied
+figure forward. The real directories are the named profiles on the target machine.
 
 ## Two ways it runs
 
@@ -67,8 +58,8 @@ opinion about the rest of the machine — a first run on an untouched profile is
 ## Verified wiring
 
 - **Memory block files** — `memories/MEMORY.md` and `USER.md`: separate entries split on a
-  line containing exactly `§`. Measured on this machine: the root profile holds 62 / 28,
-  `sys` holds 12 / 14. (This block used to claim 43 / 23, which no file produces.)
+  line containing exactly `§`. (This block used to claim fixed counts for named profiles,
+  which no file on an arbitrary target machine produces.)
 - **SOUL** — `profiles.configure{soul}` / direct file write; whole-file, **no CAS**.
 - **`profile.yaml`** — only the authored `description`. The gateway's `ui_meta` carries
   per-key CAS and is **never touched** here.

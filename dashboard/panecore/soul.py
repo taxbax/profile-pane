@@ -13,10 +13,9 @@ Splicing is IDEMPOTENT: a re-apply REPLACES the marked region instead of appendi
 second copy. That property is what makes block/section re-runnable, and re-runnable is
 what makes auto-sync safe to leave running.
 
-Verified sizes on this machine (2026-09-12) — the spread is why an anchor matters:
-  default 1704 lines · sys 1705 · schizsho-visual-dev 195 · media-control-bot 92
-  schizsho-story-room 28 · schizsho-system-builder 23 · schizsho-production 22
-  schizsho-showrunner 22 · trad 12
+Profile SOUL files vary widely in size; the spread is why an anchor matters. (Re-measure
+on your own machine rather than trusting any copied figure — line counts go stale the
+moment a file changes.)
 """
 
 from __future__ import annotations

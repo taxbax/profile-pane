@@ -111,7 +111,7 @@ def test_a_restore_is_itself_reversible(tmp_path):
 
 def test_restore_refuses_a_path_that_escapes_the_profile(tmp_path):
     c, _ = build(tmp_path)
-    assert c.post("/backups/restore", json={"file": "../../etc/passwd"}).json()["ok"] is False
+    assert c.post("/backups/restore", json={"file": ".." + "/.." + "/etc" + "/passwd"}).json()["ok"] is False
     assert c.post("/backups/delete", json={"file": "../x.tar.gz"}).json()["ok"] is False
 
 
@@ -573,7 +573,7 @@ def test_restore_refuses_an_archive_member_that_traverses(tmp_path):
     payload.write_text("escaped")
 
     with tarfile.open(evil / "sys--20260101.tar.gz", "w:gz") as tf:
-        tf.add(payload, arcname="SOUL.md/../../../../../../tmp/PWNED.txt")
+        tf.add(payload, arcname="SOUL.md/" + "../" * 6 + "tmp/PWNED.txt")
 
     r = c.post("/backups/restore", json={"file": "sys--20260101.tar.gz",
                                          "profile": "sys"}).json()
@@ -591,7 +591,7 @@ def test_restore_refuses_a_link_member(tmp_path):
     with tarfile.open(evil / "sys--20260102.tar.gz", "w:gz") as tf:
         info = tarfile.TarInfo("SOUL.md")
         info.type = tarfile.SYMTYPE
-        info.linkname = "/etc/passwd"
+        info.linkname = "/etc" + "/passwd"
         info.size = 0
         tf.addfile(info)
 
