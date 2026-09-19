@@ -80,6 +80,7 @@ untouched profile is a no-op.
 
 - **Fixed point.** Writes are idempotent — an unchanged file is not rewritten (no snapshot
   litter, no mtime churn).
+- **Staging** Review before Apply all - natural language description list of changes
 - **Snapshot before every write.** SOUL and memory files have no CAS and are not atomic; the
   snapshot is the reverse.
 - **Secret scan still blocks.** A refused copy is reported, never forced. Auto-sync is not a
