@@ -2,7 +2,7 @@
 name: profile-pane
 description: "Use when operating the profile-pane desktop plugin to stage skills and sync SOUL / memory / user / profile across grouped agents."
 version: 1.0.0
-author: Hermes Agent
+author: taxbax
 license: MIT
 platforms: [macos]
 metadata:

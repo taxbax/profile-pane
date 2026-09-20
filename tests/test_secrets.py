@@ -4,6 +4,7 @@ The invariant that matters: values move but are never RETURNED. If `read_keys` o
 `push` ever hands a value back, that value can reach the pane, the journal and a log.
 """
 import sys
+import stat
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "dashboard"))
@@ -28,6 +29,7 @@ def test_read_keys_lists_names_and_never_values(tmp_path):
     assert [k["key"] for k in keys] == ["OPENROUTER_API_KEY", "XAI_API_KEY"]
     blob = repr(keys)
     assert "verysecret" not in blob and "abc123" not in blob
+    assert "chars" not in keys[0]             # no secret-length side channel
 
 
 def test_read_keys_reports_an_empty_value(tmp_path):
@@ -103,12 +105,21 @@ def test_push_creates_the_env_when_absent(tmp_path):
     assert "WANTED=1" in text
     # a synced key says where it came from, so the file is self-explaining later
     assert "profile-pane" in text
+    assert stat.S_IMODE((m / ".env").stat().st_mode) == 0o600
 
 
 def test_push_snapshots_before_overwriting(tmp_path):
     a, m = build(tmp_path, "WANTED=1\n", "WANTED=old\n")
     r = S.push(a, m, ["WANTED"])
     assert Path(r["snapshot"]).read_text() == "WANTED=old\n"
+
+
+def test_push_preserves_existing_private_mode(tmp_path):
+    a, m = build(tmp_path, "WANTED=1\n", "WANTED=old\n")
+    target = m / ".env"
+    target.chmod(0o640)
+    S.push(a, m, ["WANTED"])
+    assert stat.S_IMODE(target.stat().st_mode) == 0o640
 
 
 def test_push_is_idempotent(tmp_path):
