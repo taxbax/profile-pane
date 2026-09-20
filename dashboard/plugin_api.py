@@ -12,25 +12,56 @@ only for what has no RPC (skill copies, memory, group registry).
 from __future__ import annotations
 
 import json
+import hashlib
+import importlib
+import importlib.util
 import shutil
 import sys
 import time
 from pathlib import Path
 
-# panecore is a sibling package — make it importable regardless of gateway load order.
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fastapi import APIRouter, Body
 
-from fastapi import APIRouter, Body                                    # noqa: E402
 
-from panecore.groups import GroupRegistry, SOUL_SCOPE_CONSEQUENCE      # noqa: E402
-from panecore import paths as paths_mod                                # noqa: E402
-from panecore import apply as apply_mod                                # noqa: E402
-from panecore import memory as mem_mod                                 # noqa: E402
-from panecore import soul as soul_mod                                  # noqa: E402
-from panecore import sync as sync_mod                                  # noqa: E402
-from panecore import trial as trial_mod                                # noqa: E402
-from panecore import secrets as secrets_mod                            # noqa: E402
-from panecore import models as models_mod                               # noqa: E402
+def _load_panecore() -> str:
+    """Load this plugin's private package without mutating ``sys.path``.
+
+    Gateway plugins share one Python interpreter. A bare ``panecore`` import
+    therefore depends on whichever unrelated plugin happened to be loaded
+    first. A path-derived private package name gives relative imports a normal
+    package context while making the module boundary deterministic and isolated.
+    """
+    package_dir = Path(__file__).resolve().parent / "panecore"
+    name = "_hermes_profile_pane_" + hashlib.sha256(str(package_dir).encode()).hexdigest()[:16]
+    if name in sys.modules:
+        return name
+    spec = importlib.util.spec_from_file_location(
+        name, package_dir / "__init__.py", submodule_search_locations=[str(package_dir)]
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot load profile-pane package from {package_dir}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    try:
+        spec.loader.exec_module(module)
+    except Exception:
+        sys.modules.pop(name, None)
+        raise
+    return name
+
+
+_PANECORE = _load_panecore()
+groups_mod = importlib.import_module(f"{_PANECORE}.groups")
+paths_mod = importlib.import_module(f"{_PANECORE}.paths")
+apply_mod = importlib.import_module(f"{_PANECORE}.apply")
+mem_mod = importlib.import_module(f"{_PANECORE}.memory")
+soul_mod = importlib.import_module(f"{_PANECORE}.soul")
+sync_mod = importlib.import_module(f"{_PANECORE}.sync")
+trial_mod = importlib.import_module(f"{_PANECORE}.trial")
+secrets_mod = importlib.import_module(f"{_PANECORE}.secrets")
+models_mod = importlib.import_module(f"{_PANECORE}.models")
+GroupRegistry = groups_mod.GroupRegistry
+SOUL_SCOPE_CONSEQUENCE = groups_mod.SOUL_SCOPE_CONSEQUENCE
 
 router = APIRouter()
 
@@ -505,7 +536,11 @@ async def trial_apply(body: dict = Body(...)) -> dict:
         # that covers the layers above it, so a group with secrets enabled and NO anchor
         # reached `read_keys(None)` and raised TypeError — a 500 on a configuration the
         # pane lets you build (turn Secrets on before picking an anchor).
-        sec_mode = body.get("secrets") or policy.get("secrets", "off")
+        # Secret movement is an especially consequential policy.  The pane may
+        # select keys for an already-committed granular policy, but it cannot
+        # elevate ``off`` or replace ``granular`` with whole-keyring ``push`` in
+        # an otherwise ordinary /trial request.
+        sec_mode = policy.get("secrets", "off")
         if sec_mode in ("push", "granular") and src_dir is None:
             results.append({"layer": "secrets", "ok": False,
                             "reason": "no anchor — nothing to copy keys FROM"})
@@ -513,7 +548,7 @@ async def trial_apply(body: dict = Body(...)) -> dict:
             if sec_mode == "push":
                 sec_keys = [k["key"] for k in secrets_mod.read_keys(src_dir) if k["has_value"]]
             else:
-                sec_keys = body.get("secret_keys") or policy.get("secret_keys") or []
+                sec_keys = policy.get("secret_keys") or []
             for m in members:
                 if m == anchor:
                     continue

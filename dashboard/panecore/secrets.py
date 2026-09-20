@@ -18,6 +18,8 @@ forks token state, and the first refresh in either copy strands the other
 
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 
 from . import apply as apply_mod
@@ -53,7 +55,9 @@ def read_keys(profile_dir: Path) -> list[dict]:
     out = []
     for key, line in parse_env(p.read_text(encoding="utf-8", errors="replace")):
         value = line.split("=", 1)[1].strip().strip('"').strip("'")
-        out.append({"key": key, "has_value": bool(value), "chars": len(value)})
+        # Value length is unnecessary telemetry about a credential. The pane
+        # only needs the presence bit, so keep the response non-sensitive.
+        out.append({"key": key, "has_value": bool(value)})
     return out
 
 
@@ -116,7 +120,24 @@ def push(src_dir: Path, dest_dir: Path, keys: list[str]) -> dict:
     existed = dest_p.exists()
     snap = apply_mod.snapshot(dest_p) if existed else None
     dest_p.parent.mkdir(parents=True, exist_ok=True)
-    dest_p.write_text(text, encoding="utf-8")
+    # `Path.write_text` creates a new .env at the process umask (commonly
+    # 0644). Write privately and replace atomically instead; preserve an
+    # existing destination's mode, otherwise default to owner-read/write.
+    mode = (dest_p.stat().st_mode & 0o777) if existed else 0o600
+    fd, tmp_name = tempfile.mkstemp(prefix=".env.profile-pane-", dir=dest_p.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.chmod(tmp_name, mode)
+        os.replace(tmp_name, dest_p)
+    except Exception:
+        try:
+            os.unlink(tmp_name)
+        except OSError:
+            pass
+        raise
     return {"ok": True, "unchanged": False, "snapshot": snap, "created": not existed,
             "keys": usable, "missing": missing, "path": str(dest_p),
             "member_keys_kept": len([k for k, _ in parse_env("\n".join(member_lines))

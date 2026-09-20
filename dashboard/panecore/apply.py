@@ -129,6 +129,19 @@ def snapshot(path: Path) -> str | None:
     _key = f"{int(time.time())}-{next(_SNAP_SEQ)}"
     snap = path.with_name(path.name + f".snap-{_key}")
     shutil.copy2(path, snap)        # copy2 carries st_mode across
+    # A snapshot is the reverse for the NEXT destructive write, not an
+    # unbounded secret archive.  Retain this newest complete preimage only.
+    # This runs after copy2, so a failed cleanup never removes the new reverse.
+    for older in path.parent.glob(path.name + ".snap-*"):
+        if older == snap:
+            continue
+        try:
+            if older.is_dir():
+                shutil.rmtree(older)
+            else:
+                older.unlink()
+        except OSError:
+            continue
     return str(snap)
 
 

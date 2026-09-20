@@ -355,6 +355,29 @@ def test_push_mode_skips_empty_keys(tmp_path):
     push_secrets_via_trial(c, "sys", ["trad"], [], mode="push")
     text = (root / "profiles" / "trad" / ".env").read_text()
     assert "FILLED=1" in text and "BLANK" not in text
+
+
+def test_trial_body_cannot_enable_secret_movement(tmp_path):
+    """Only the persisted group policy can authorize moving credential values."""
+    c, root = build(tmp_path)
+    (root / "profiles" / "sys" / ".env").write_text("A=1\n")
+    c.post("/groups", json={"id": "locked", "members": ["sys", "trad"],
+                            "policy": {"anchor": "sys", "secrets": "off"}})
+    c.post("/trial", json={"group": "locked", "profiles": [], "skills": [], "remove": [],
+                            "secrets": "push", "secret_keys": ["A"]})
+    assert not (root / "profiles" / "trad" / ".env").exists()
+
+
+def test_trial_body_cannot_broaden_granular_secret_keys(tmp_path):
+    c, root = build(tmp_path)
+    (root / "profiles" / "sys" / ".env").write_text("A=1\nB=2\n")
+    c.post("/groups", json={"id": "narrow", "members": ["sys", "trad"],
+                            "policy": {"anchor": "sys", "secrets": "granular",
+                                       "secret_keys": ["A"]}})
+    c.post("/trial", json={"group": "narrow", "profiles": [], "skills": [], "remove": [],
+                            "secret_keys": ["B"]})
+    text = (root / "profiles" / "trad" / ".env").read_text()
+    assert "A=1" in text and "B=2" not in text
 def test_the_sync_pass_also_carries_secrets(tmp_path):
     """Auto-sync is the cron's path — secrets must move there too, not only on Apply."""
     c, root = build(tmp_path)
